@@ -12,6 +12,9 @@ permissions:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -23,10 +26,14 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          npm ci
+          npm list --depth=0
 
       - name: Build
-        run: npm run build
+        run: |
+          npm run build
+          ls -la dist
         env:
           VITE_BASE_URL: '/preview-tool/'
 
