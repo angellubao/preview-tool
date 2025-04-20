@@ -6,7 +6,7 @@ import {
   Box, 
   Typography, 
   Paper,
-  Grid,
+  Grid as MuiGrid,
   Snackbar,
   Alert,
   Stack,
@@ -21,6 +21,7 @@ import SaveIcon from '@mui/icons-material/Save';
 import CloseIcon from '@mui/icons-material/Close';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
+import { SelectChangeEvent } from '@mui/material';
 
 interface Banner {
   url: string;
@@ -29,8 +30,13 @@ interface Banner {
   title: string;
 }
 
+// Create a typed Grid component
+const Grid = MuiGrid as typeof MuiGrid & {
+  defaultProps: { component: string };
+};
+
 function App() {
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(true);
   const theme = useTheme();
   const [url, setUrl] = useState('');
   const [banners, setBanners] = useState<Banner[]>([]);
@@ -50,7 +56,7 @@ function App() {
   };
 
   const generatePreviewHTML = () => {
-    const bannerHTML = banners.map((banner, index) => {
+    const bannerHTML = banners.map((banner) => {
       const filenameDimensions = getDimensionsFromFilename(banner.url);
       const width = banner.width > 0 ? banner.width : (filenameDimensions?.width || 340);
       const height = banner.height > 0 ? banner.height : (filenameDimensions?.height || 677);
@@ -58,8 +64,8 @@ function App() {
       return `
         <div style="margin: 0 20px; ${width >= 728 ? 'width: 100%;' : ''}">
           <h3 style="margin: 0 0 5px 0; font-size: 16px;">${banner.title}</h3>
-          <p style="text-align: left; color: #b0b0b0; font-size: 12px; margin: 0 0 5px 0;">Size: 320 × 480px</p>
-          <div style="width: ${width}px; height: ${height}px; ${width >= 728 ? 'margin: 0;' : 'margin: 0 auto;'} border: 1px solid #e0e0e0; border-radius: 4px; overflow: hidden;">
+          <p style="text-align: left; color: #666666; font-size: 12px; margin: 0 0 5px 0;">Size: ${width === 340 && height === 677 ? 'Responsive' : `${width} × ${height}px`}</p>
+          <div style="width: ${width}px; height: ${height}px; ${width >= 728 ? 'margin: 0;' : 'margin: 0 auto;'} overflow: hidden;">
             <iframe 
               src="${banner.url}" 
               style="width: 100%; height: 100%; border: none;"
@@ -84,6 +90,8 @@ function App() {
               margin: 0 auto;
               padding: 20px;
               transition: background-color 0.3s, color 0.3s;
+              background-color: #ffffff;
+              color: #000000;
             }
             body.dark-mode {
               background-color: #2d2d2d;
@@ -183,9 +191,11 @@ function App() {
               localStorage.setItem('darkMode', isDarkMode);
             }
             
-            // Check for saved theme preference
+            // Check for saved theme preference, default to light mode
             if (localStorage.getItem('darkMode') === 'true') {
               document.body.classList.add('dark-mode');
+            } else {
+              document.body.classList.remove('dark-mode');
             }
           </script>
         </body>
@@ -397,85 +407,78 @@ function App() {
           </Alert>
         </Snackbar>
 
-        <Grid container spacing={3}>
-          {banners.map((banner, index) => {
-            const filenameDimensions = getDimensionsFromFilename(banner.url);
-            const width = banner.width > 0 ? banner.width : (filenameDimensions?.width || 300);
-            const height = banner.height > 0 ? banner.height : (filenameDimensions?.height || 600);
-
-            return (
-              <Grid item xs={12} sm={6} md={4} key={index}>
-                <Paper elevation={3} sx={{ p: 2, height: '100%', position: 'relative' }}>
-                  <IconButton
-                    size="small"
-                    onClick={() => handleDeleteBanner(index)}
-                    sx={{
-                      position: 'absolute',
-                      right: 8,
-                      top: 8,
-                      bgcolor: 'background.paper',
-                      boxShadow: 1,
-                      '&:hover': {
-                        bgcolor: 'error.light',
-                        color: 'white'
-                      }
-                    }}
-                  >
-                    <CloseIcon fontSize="small" />
-                  </IconButton>
-                  <TextField
-                    variant="standard"
-                    value={banner.title}
-                    onChange={(e) => handleTitleChange(index, e.target.value)}
-                    onFocus={(e) => e.target.select()}
-                    sx={{ 
-                      mb: 1,
-                      '& .MuiInputBase-root': {
-                        fontSize: '1rem',
-                        fontWeight: '500'
-                      }
-                    }}
-                  />
-                  {(banner.width > 0 || filenameDimensions) && (
-                    <Typography variant="caption" display="block" color="text.secondary">
-                      Size: 320 × 480px
-                    </Typography>
-                  )}
+        <Grid container spacing={2}>
+          {banners.map((banner, index) => (
+            <Grid item xs={12} sm={6} md={4} key={index}>
+              <Paper elevation={3} sx={{ p: 2, height: '100%', position: 'relative' }}>
+                <IconButton
+                  size="small"
+                  onClick={() => handleDeleteBanner(index)}
+                  sx={{
+                    position: 'absolute',
+                    right: 8,
+                    top: 8,
+                    bgcolor: 'background.paper',
+                    boxShadow: 1,
+                    '&:hover': {
+                      bgcolor: 'error.light',
+                      color: 'white'
+                    }
+                  }}
+                >
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+                <TextField
+                  variant="standard"
+                  value={banner.title}
+                  onChange={(e) => handleTitleChange(index, e.target.value)}
+                  onFocus={(e) => e.target.select()}
+                  sx={{ 
+                    mb: 1,
+                    '& .MuiInputBase-root': {
+                      fontSize: '1rem',
+                      fontWeight: '500'
+                    }
+                  }}
+                />
+                {(banner.width > 0 || getDimensionsFromFilename(banner.url)) && (
+                  <Typography variant="caption" display="block" color="text.secondary">
+                    Size: {banner.width === 340 && banner.height === 677 ? 'Responsive' : `${banner.width} × ${banner.height}px`}
+                  </Typography>
+                )}
+                <Box
+                  sx={{
+                    width: `${banner.width}px`,
+                    height: `${banner.height}px`,
+                    position: 'relative',
+                    overflow: 'visible',
+                    borderRadius: 1,
+                    margin: '0 auto',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    mt: 2
+                  }}
+                >
                   <Box
-                    sx={{
-                      width: `${width}px`,
-                      height: `${height}px`,
-                      position: 'relative',
-                      overflow: 'visible',
-                      border: '1px solid #e0e0e0',
-                      borderRadius: 1,
-                      margin: '0 auto',
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      mt: 2
+                    component="iframe"
+                    ref={(el: HTMLIFrameElement | null) => {
+                      iframeRefs.current[index] = el;
                     }}
-                  >
-                    <Box
-                      component="iframe"
-                      ref={(el: HTMLIFrameElement | null) => {
-                        iframeRefs.current[index] = el;
-                      }}
-                      src={banner.url}
-                      onLoad={() => handleIframeLoad(index)}
-                      sx={{
-                        width: '100%',
-                        height: '100%',
-                        border: 'none',
-                        display: 'block',
-                      }}
-                      title={banner.title}
-                    />
-                  </Box>
-                </Paper>
-              </Grid>
-            );
-          })}
+                    src={banner.url}
+                    onLoad={() => handleIframeLoad(index)}
+                    sx={{
+                      width: '100%',
+                      height: '100%',
+                      border: 'none',
+                      display: 'block',
+                    }}
+                    title={banner.title}
+                  />
+                </Box>
+              </Paper>
+            </Grid>
+          ))}
         </Grid>
       </Container>
     </ThemeProvider>

@@ -1,0 +1,43 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Resources:
+  ListS3FoldersFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../lambda/
+      Handler: list-s3-folders.handler
+      Runtime: nodejs18.x
+      Policies:
+        - S3ReadPolicy:
+            BucketName: nativetouch-public
+      Events:
+        ListFolders:
+          Type: Api
+          Properties:
+            Path: /list-folders
+            Method: get
+      Environment:
+        Variables:
+          BUCKET_NAME: nativetouch-public
+
+  ApiGateway:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: S3FoldersAPI
+      Description: API for listing S3 folders
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+
+  ApiGatewayDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn: ListS3FoldersFunction
+    Properties:
+      RestApiId: !Ref ApiGateway
+      StageName: prod
+
+Outputs:
+  ApiEndpoint:
+    Description: API Gateway endpoint URL
+    Value: !Sub "https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/prod/list-folders" 
