@@ -56,15 +56,28 @@ function App() {
   };
 
   const generatePreviewHTML = () => {
+    // Sort banners by height, from highest to lowest
+    banners.sort((a, b) => {
+      const aDimensions = getDimensionsFromFilename(a.url) || {};
+      const bDimensions = getDimensionsFromFilename(b.url) || {};
+  
+      const aHeight = a.height > 0 ? a.height : (aDimensions.height || 677);
+      const bHeight = b.height > 0 ? b.height : (bDimensions.height || 677);
+  
+      return bHeight - aHeight;
+    });
+  
     const bannerHTML = banners.map((banner) => {
       const filenameDimensions = getDimensionsFromFilename(banner.url);
       const width = banner.width > 0 ? banner.width : (filenameDimensions?.width || 340);
       const height = banner.height > 0 ? banner.height : (filenameDimensions?.height || 677);
-
+  
       return `
         <div style="margin: 0 20px; ${width >= 728 ? 'width: 100%;' : ''}">
           <h3 style="margin: 0 0 5px 0; font-size: 16px;">${banner.title}</h3>
-          <p style="text-align: left; color: #666666; font-size: 12px; margin: 0 0 5px 0;">Size: ${width === 340 && height === 677 ? 'Responsive' : `${width} × ${height}px`}</p>
+          <p style="text-align: left; color: #666666; font-size: 12px; margin: 0 0 5px 0;">
+            Size: ${width === 340 && height === 677 ? 'Responsive' : `${width} × ${height}px`}
+          </p>
           <div style="width: ${width}px; height: ${height}px; ${width >= 728 ? 'margin: 0;' : 'margin: 0 auto;'} overflow: hidden;">
             <iframe 
               src="${banner.url}" 
@@ -75,7 +88,7 @@ function App() {
         </div>
       `;
     }).join('');
-
+  
     return `
       <!DOCTYPE html>
       <html lang="en">
@@ -92,6 +105,7 @@ function App() {
               transition: background-color 0.3s, color 0.3s;
               background-color: #ffffff;
               color: #000000;
+              position: relative;
             }
             body.dark-mode {
               background-color: #2d2d2d;
@@ -101,9 +115,6 @@ function App() {
               text-align: center;
               margin-bottom: 50px;
               font-size: 24px;
-            }
-            h3 {
-              font-weight: 500;
             }
             .banners-container {
               display: flex;
@@ -118,90 +129,291 @@ function App() {
             .banners-container > div[style*="width: 100%"] {
               flex: 0 0 100%;
             }
-            .banners-container > div[style*="width: 100%"] > div {
-              margin-left: 0 !important;
-            }
-            .dark-mode .banner-title {
-              color: #e0e0e0;
-            }
-            .dark-mode .banner-size {
-              color: #b0b0b0;
-            }
-            .dark-mode .banner-container {
-              border-color: #404040;
-            }
-            .theme-toggle {
+            .theme-toggle, .trackings-button {
               position: fixed;
               top: 20px;
-              right: 20px;
-              background: #fff;
-              border: 1px solid #ddd;
-              border-radius: 50%;
               width: 40px;
               height: 40px;
+              border-radius: 50%;
+              border: 1px solid #ddd;
               display: flex;
               align-items: center;
               justify-content: center;
               cursor: pointer;
               transition: background-color 0.3s;
+              z-index: 999;
             }
-            .dark-mode .theme-toggle {
+            .theme-toggle {
+              right: 20px;
+              background: #fff;
+            }
+            .trackings-button {
+              right: 70px;
+              background: #fff;
+            }
+            .dark-mode .theme-toggle, .dark-mode .trackings-button {
               background: #2d2d2d;
               border-color: #404040;
               color: #e0e0e0;
             }
-            @media (max-width: 768px) {
-              .banners-container {
-                flex-direction: column;
-                align-items: center;
-                gap: 30px 0;
-              }
-              .banners-container > div {
-                width: 100%;
-              }
-              .theme-toggle {
-                top: 10px;
-                right: 10px;
-              }
+            .popup-content {
+              display: none;
+              position: fixed;
+              top: 100px;
+              left: 50%;
+              background: white;
+              padding: 40px 20px 20px 20px;
+              width: 300px;
+              height: 300px;
+              border-radius: 10px;
+              overflow-y: auto;
+              box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+              resize: both;
+              overflow: auto;
+              z-index: 1001;
+              cursor: move;
             }
+            .popup-header {
+              position: absolute;
+              top: 0;
+              left: 0;
+              right: 0;
+              height: 40px;
+              background: #f5f5f5;
+              border-top-left-radius: 10px;
+              border-top-right-radius: 10px;
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              padding: 0 10px;
+              cursor: move;
+              user-select: none;
+            }
+            .popup-header h2 {
+              margin: 0;
+              font-size: 16px;
+            }
+            .popup-close {
+              background: none;
+              border: none;
+              font-size: 18px;
+              cursor: pointer;
+              color: #333;
+              transition: color 0.3s;
+            }
+
+            .dark-mode .popup-close {
+              color: #fff;
+            }
+            .popup-content ul {
+              padding-left: 5px;
+              text-align: left;
+              margin-top: 10px;
+            }
+            .popup-content ul li {
+              margin-bottom: 10px;
+              word-break: break-word;
+              font-size: 12px;
+              color: #333;
+            }
+
+            .tracking-list {
+              flex: 1 1 auto;
+              overflow-y: auto; /* scroll if needed */
+              margin: 0;
+              padding: 10px;
+              list-style: none;
+            }
+
+            .popup-footer {
+              padding: 10px;
+              // background: #f9f9f9;
+              // border-top: 1px solid #ccc;
+              text-align: center;
+            }
+
+            .copy-btn {
+              padding: 8px 16px;
+              background: #007BFF;
+              color: #fff;
+              border: none;
+              border-radius: 5px;
+              cursor: pointer;
+            }
+            .dark-mode .popup-content {
+              background: #333;
+              color: #eee;
+            }
+            .dark-mode .popup-header {
+              background: #444;
+            }
+            .dark-mode .popup-content ul li {
+              color: #ccc;
+            }
+            .dark-mode .popup-content button.copy-btn {
+              background: #0056b3;
+            }
+
+            .tracking-item {
+              display: flex;
+              justify-content: space-between; /* Large space between spans */
+              padding: 5px 12px;
+              border-bottom: 1px solid #ddd;
+            }
+
+            .tracking-item .label {
+              font-weight: bold;
+            }
+
+            .tracking-item .banner-name {
+              color: #666;
+              margin-left: 40px; /* optional if you want extra manual space too */
+            }
+
           </style>
         </head>
         <body>
-          <button class="theme-toggle" onclick="toggleTheme()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="5"></circle>
-              <line x1="12" y1="1" x2="12" y2="3"></line>
-              <line x1="12" y1="21" x2="12" y2="23"></line>
-              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-              <line x1="1" y1="12" x2="3" y2="12"></line>
-              <line x1="21" y1="12" x2="23" y2="12"></line>
-              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-            </svg>
-          </button>
+          <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+          <button class="trackings-button" onclick="togglePopup()">📋</button>
+          
           <h1>${previewTitle}</h1>
           <div class="banners-container">
             ${bannerHTML}
           </div>
+  
+          <!-- Popup -->
+          <div id="popup" class="popup-content">
+            <div id="popup-header" class="popup-header">
+              <h2>Events</h2>
+              <button class="popup-close" onclick="togglePopup()">✖</button>
+            </div>
+            <ul id="tracking-list"></ul>
+            <footer class="popup-footer">
+              <button class="copy-btn" onclick="copyAll()">Copy All</button>
+            </footer>
+          </div>
+  
           <script>
             function toggleTheme() {
               document.body.classList.toggle('dark-mode');
               const isDarkMode = document.body.classList.contains('dark-mode');
               localStorage.setItem('darkMode', isDarkMode);
             }
-            
-            // Check for saved theme preference, default to light mode
+  
             if (localStorage.getItem('darkMode') === 'true') {
               document.body.classList.add('dark-mode');
             } else {
               document.body.classList.remove('dark-mode');
+            }
+  
+            const banners = ${JSON.stringify(banners)};
+  
+            function togglePopup() {
+              const popup = document.getElementById('popup');
+              const list = document.getElementById('tracking-list');
+              if (popup.style.display === 'none' || popup.style.display === '') {
+                list.innerHTML = '';
+                popup.style.display = 'block';
+              } else {
+                popup.style.display = 'none';
+              }
+            }
+  
+            function copyAll() {
+              const listItems = document.querySelectorAll('#tracking-list li');
+              // const text = Array.from(listItems).map(li => li.textContent).join('\\n');
+              const text = Array.from(listItems).map(li => {
+                const labelSpan = li.querySelector('.label');
+                return labelSpan ? labelSpan.textContent : '';
+              }).join('\\n');
+
+              navigator.clipboard.writeText(text).then(() => {
+                alert('Copied!');
+              }).catch((err) => {
+                console.error('Failed to copy: ', err);
+              });
+            }
+  
+            dragElement(document.getElementById("popup"), document.getElementById("popup-header"));
+  
+            function dragElement(elmnt, dragHandle) {
+              let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+              if (dragHandle) {
+                dragHandle.onmousedown = dragMouseDown;
+              } else {
+                elmnt.onmousedown = dragMouseDown;
+              }
+  
+              function dragMouseDown(e) {
+                e = e || window.event;
+                e.preventDefault();
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                document.onmouseup = closeDragElement;
+                document.onmousemove = elementDrag;
+              }
+  
+              function elementDrag(e) {
+                e = e || window.event;
+                e.preventDefault();
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+                elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+              }
+  
+              function closeDragElement() {
+                document.onmouseup = null;
+                document.onmousemove = null;
+              }
+
+              window.addEventListener('message', function(event) {
+              if (event.data && event.data.type === 'trackEvent') {
+                console.log('Received from iframe:', event.data.reportLabel);
+
+                const trackingList = document.getElementById('tracking-list');
+
+                // Create a new list item
+                const listItem = document.createElement('li');
+                listItem.className = 'tracking-item'; // Add class for styling
+
+                // Safely create span elements for reportLabel and bannerHTML
+                const labelSpan = document.createElement('span');
+                labelSpan.className = 'label';
+                labelSpan.textContent = event.data.reportLabel; // Assigning report label to left side
+
+                // Find the iframe that sent the message
+                let matchingTitle = '';
+                const iframes = document.querySelectorAll('iframe');
+                iframes.forEach((iframe) => {
+                  if (iframe.contentWindow === event.source) {
+                    matchingTitle = iframe.getAttribute('title') || '';
+                  }
+                });
+
+                const bannerSpan = document.createElement('span');
+                bannerSpan.className = 'banner-name';
+                bannerSpan.textContent = matchingTitle;
+
+                // Append spans to the list item
+                listItem.appendChild(labelSpan);
+                listItem.appendChild(bannerSpan);
+
+                // Append the new list item to the tracking list
+                trackingList.appendChild(listItem);
+              }
+            });
+
             }
           </script>
         </body>
       </html>
     `;
   };
+  
+
 
   const handleSave = () => {
     try {
