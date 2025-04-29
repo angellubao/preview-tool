@@ -21,7 +21,6 @@ import SaveIcon from '@mui/icons-material/Save';
 import CloseIcon from '@mui/icons-material/Close';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
-import { SelectChangeEvent } from '@mui/material';
 
 interface Banner {
   url: string;
@@ -41,7 +40,7 @@ function App() {
   const [url, setUrl] = useState('');
   const [banners, setBanners] = useState<Banner[]>([]);
   const [saveSuccess, setSaveSuccess] = useState(false);
-  const [previewTitle, setPreviewTitle] = useState('Banner Preview');
+  const [previewTitle, setPreviewTitle] = useState('Preview');
   const iframeRefs = useRef<(HTMLIFrameElement | null)[]>([]);
 
   const toggleDarkMode = () => {
@@ -50,28 +49,52 @@ function App() {
 
   const handleAddBanner = () => {
     if (url.trim()) {
-      setBanners([...banners, { url: url.trim(), width: 0, height: 0, title: `Banner ${banners.length + 1}` }]);
+      const getTitleFromUrl = (url: string) => {
+        const parts = url.trim().split('/');
+        // Remove last part if it's a file
+        if (parts[parts.length - 1].includes('.')) {
+          parts.pop();
+        }
+        const folderName = parts[parts.length - 1] || 'BANNER';
+        return folderName.replace(/_/g, ' ').toUpperCase();
+      };
+  
+      setBanners([
+        ...banners,
+        {
+          url: url.trim(),
+          width: 0,
+          height: 0,
+          title: getTitleFromUrl(url),
+        },
+      ]);
+  
       setUrl('');
     }
   };
+  
 
   const generatePreviewHTML = () => {
-    // Sort banners by height, from highest to lowest
+    // Sort banners by height descending, then by title alphabetically
     banners.sort((a, b) => {
       const aDimensions = getDimensionsFromFilename(a.url) || {};
       const bDimensions = getDimensionsFromFilename(b.url) || {};
-  
+
       const aHeight = a.height > 0 ? a.height : (aDimensions.height || 677);
       const bHeight = b.height > 0 ? b.height : (bDimensions.height || 677);
-  
-      return bHeight - aHeight;
+
+      if (bHeight !== aHeight) {
+        return bHeight - aHeight; // First sort by height descending
+      } else {
+        return (a.title || '').localeCompare(b.title || ''); // Then sort by title alphabetically
+      }
     });
-  
+
     const bannerHTML = banners.map((banner) => {
       const filenameDimensions = getDimensionsFromFilename(banner.url);
       const width = banner.width > 0 ? banner.width : (filenameDimensions?.width || 340);
       const height = banner.height > 0 ? banner.height : (filenameDimensions?.height || 677);
-  
+
       return `
         <div style="margin: 0 20px; ${width >= 728 ? 'width: 100%;' : ''}">
           <h3 style="margin: 0 0 5px 0; font-size: 16px;">${banner.title}</h3>
@@ -115,6 +138,7 @@ function App() {
               text-align: center;
               margin-bottom: 50px;
               font-size: 24px;
+              color: #00C784;
             }
             .banners-container {
               display: flex;
@@ -162,8 +186,8 @@ function App() {
               top: 100px;
               left: 50%;
               background: white;
-              padding: 40px 20px 20px 20px;
-              width: 300px;
+              // padding: 40px 20px 20px 20px;
+              width: 400px;
               height: 300px;
               border-radius: 10px;
               overflow-y: auto;
@@ -171,10 +195,11 @@ function App() {
               resize: both;
               overflow: auto;
               z-index: 1001;
-              cursor: move;
+              cursor: auto;
             }
             .popup-header {
-              position: absolute;
+              position: sticky;
+              z-index: 1;
               top: 0;
               left: 0;
               right: 0;
@@ -206,7 +231,7 @@ function App() {
               color: #fff;
             }
             .popup-content ul {
-              padding-left: 5px;
+              padding: 10px;
               text-align: left;
               margin-top: 10px;
             }
@@ -234,11 +259,15 @@ function App() {
 
             .copy-btn {
               padding: 8px 16px;
-              background: #007BFF;
+              background: #00C784;
               color: #fff;
               border: none;
               border-radius: 5px;
               cursor: pointer;
+              transition: background 0.3s;
+            }
+            .copy-btn:active {
+              background: #009e6b;
             }
             .dark-mode .popup-content {
               background: #333;
@@ -251,9 +280,22 @@ function App() {
               color: #ccc;
             }
             .dark-mode .popup-content button.copy-btn {
-              background: #0056b3;
+              background: #00C784;
             }
-
+            .dark-mode .popup-content button.copy-btn:active {
+              background: #009e6b;
+            }
+            .clear-btn {
+              padding: 8px 16px;
+              background: #ccc;
+              color: #333;
+              border: none;
+              border-radius: 5px;
+              cursor: pointer;
+            }
+            .dark-mode .popup-content button.clear-btn {
+              background: #ccc;
+            }
             .tracking-item {
               display: flex;
               justify-content: space-between; /* Large space between spans */
@@ -285,13 +327,17 @@ function App() {
           <div id="popup" class="popup-content">
             <div id="popup-header" class="popup-header">
               <h2>Events</h2>
-              <button class="popup-close" onclick="togglePopup()">✖</button>
+              <div class="popup-header-buttons">
+                <button class="copy-btn" onclick="copyAll()">Copy</button>
+                <button class="popup-close" onclick="togglePopup()">✖</button>
+              </div>
             </div>
             <ul id="tracking-list"></ul>
             <footer class="popup-footer">
-              <button class="copy-btn" onclick="copyAll()">Copy All</button>
+              <button class="clear-btn" onclick="clearList()">Clear 🧹</button>
             </footer>
           </div>
+
   
           <script>
             function toggleTheme() {
@@ -306,19 +352,22 @@ function App() {
               document.body.classList.remove('dark-mode');
             }
   
-            const banners = ${JSON.stringify(banners)};
+            // const banners = ${JSON.stringify(banners)};
   
             function togglePopup() {
               const popup = document.getElementById('popup');
               const list = document.getElementById('tracking-list');
               if (popup.style.display === 'none' || popup.style.display === '') {
-                list.innerHTML = '';
+                // list.innerHTML = '';
                 popup.style.display = 'block';
               } else {
                 popup.style.display = 'none';
               }
             }
-  
+            function clearList() {
+              const list = document.getElementById('tracking-list');
+              list.innerHTML = '';
+            }
             function copyAll() {
               const listItems = document.querySelectorAll('#tracking-list li');
               // const text = Array.from(listItems).map(li => li.textContent).join('\\n');
@@ -328,7 +377,7 @@ function App() {
               }).join('\\n');
 
               navigator.clipboard.writeText(text).then(() => {
-                alert('Copied!');
+                // alert('Copied!');
               }).catch((err) => {
                 console.error('Failed to copy: ', err);
               });
@@ -371,7 +420,7 @@ function App() {
 
               window.addEventListener('message', function(event) {
               if (event.data && event.data.type === 'trackEvent') {
-                console.log('Received from iframe:', event.data.reportLabel);
+                // console.log('Received from iframe:', event.data.reportLabel);
 
                 const trackingList = document.getElementById('tracking-list');
 
@@ -551,7 +600,7 @@ function App() {
       <CssBaseline />
       <Container maxWidth="xl" sx={{ py: 4 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-          <Typography variant="h4" component="h1">
+          <Typography variant="h4" component="h1" color=" #00C784">
             Banner Preview Tool
           </Typography>
           <Box>
@@ -563,7 +612,11 @@ function App() {
               startIcon={<SaveIcon />}
               onClick={handleSave}
               disabled={banners.length === 0}
-              sx={{ ml: 2 }}
+              sx={{ ml: 2,
+                backgroundColor: '#00C784',
+                '&:hover': {
+                  backgroundColor: '#00b374',
+                },}}
             >
               Save
             </Button>
@@ -572,7 +625,7 @@ function App() {
 
         <Box sx={{ mb: 4 }}>
           <Stack spacing={2}>
-            <Box sx={{ width: '300px' }}>
+            <Box sx={{ width: '500px' }}>
               <TextField
                 fullWidth
                 label="Preview Page Title"
@@ -584,7 +637,7 @@ function App() {
               />
             </Box>
             <Stack direction="row" spacing={2}>
-              <Box sx={{ width: '300px' }}>
+              <Box sx={{ width: '500px' }}>
                 <TextField
                   fullWidth
                   label="Enter Banner URL"
@@ -599,7 +652,11 @@ function App() {
                 <Button
                   variant="contained"
                   onClick={handleAddBanner}
-                  sx={{ height: '56px', minWidth: '56px' }}
+                  sx={{ height: '56px', minWidth: '56px', 
+                    backgroundColor: '#00C784',
+                    '&:hover': {
+                      backgroundColor: '#00b374',
+                    },}}
                 >
                   <AddIcon />
                 </Button>
@@ -619,7 +676,7 @@ function App() {
           </Alert>
         </Snackbar>
 
-        <Grid container spacing={2}>
+        <Grid container spacing={3}>
           {banners.map((banner, index) => (
             <Grid item xs={12} sm={6} md={4} key={index}>
               <Paper elevation={3} sx={{ p: 2, height: '100%', position: 'relative' }}>
@@ -628,12 +685,12 @@ function App() {
                   onClick={() => handleDeleteBanner(index)}
                   sx={{
                     position: 'absolute',
-                    right: 8,
-                    top: 8,
-                    bgcolor: 'background.paper',
+                    right: -15,
+                    top: -15,
+                    bgcolor: '#aaa',
                     boxShadow: 1,
                     '&:hover': {
-                      bgcolor: 'error.light',
+                      bgcolor: '#00C784',
                       color: 'white'
                     }
                   }}
@@ -641,6 +698,7 @@ function App() {
                   <CloseIcon fontSize="small" />
                 </IconButton>
                 <TextField
+                  fullWidth
                   variant="standard"
                   value={banner.title}
                   onChange={(e) => handleTitleChange(index, e.target.value)}
