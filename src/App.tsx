@@ -604,9 +604,6 @@ function App() {
             Banner Preview Tool
           </Typography>
           <Box>
-            <IconButton onClick={toggleDarkMode} color="inherit">
-              {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
-            </IconButton>
             <Button
               variant="contained"
               startIcon={<SaveIcon />}
@@ -620,6 +617,9 @@ function App() {
             >
               Save
             </Button>
+            <IconButton onClick={toggleDarkMode} color="inherit" sx={{ ml: 1 }}>
+              {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
+            </IconButton>
           </Box>
         </Box>
 
