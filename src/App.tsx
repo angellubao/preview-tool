@@ -99,7 +99,7 @@ function App() {
         <div style="margin: 0 20px; ${width >= 728 ? 'width: 100%;' : ''}">
           <h3 style="margin: 0 0 5px 0; font-size: 16px;">${banner.title}</h3>
           <p style="text-align: left; color: #666666; font-size: 12px; margin: 0 0 5px 0;">
-            Size: ${width === 340 && height === 677 ? 'Responsive' : `${width} × ${height}px`}
+            Size: ${width === 340 && height === 677 ? 'Responsive' : `${width}x${height}`}
           </p>
           <div style="width: ${width}px; height: ${height}px; ${width >= 728 ? 'margin: 0;' : 'margin: 0 auto;'} overflow: hidden;">
             <iframe 
@@ -386,33 +386,50 @@ function App() {
             dragElement(document.getElementById("popup"), document.getElementById("popup-header"));
   
             function dragElement(elmnt, dragHandle) {
-              let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+              let pos3 = 0, pos4 = 0;
+              let offsetX = 0, offsetY = 0;
+
               if (dragHandle) {
                 dragHandle.onmousedown = dragMouseDown;
               } else {
                 elmnt.onmousedown = dragMouseDown;
               }
-  
+
               function dragMouseDown(e) {
                 e = e || window.event;
                 e.preventDefault();
                 pos3 = e.clientX;
                 pos4 = e.clientY;
+
+                // Save the offset inside the element where we clicked
+                const rect = elmnt.getBoundingClientRect();
+                offsetX = pos3 - rect.left;
+                offsetY = pos4 - rect.top;
+
                 document.onmouseup = closeDragElement;
                 document.onmousemove = elementDrag;
               }
-  
+
               function elementDrag(e) {
                 e = e || window.event;
                 e.preventDefault();
-                pos1 = pos3 - e.clientX;
-                pos2 = pos4 - e.clientY;
-                pos3 = e.clientX;
-                pos4 = e.clientY;
-                elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
-                elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+
+                let newLeft = e.clientX - offsetX;
+                let newTop = e.clientY - offsetY;
+
+                // Clamp within window bounds
+                const minTop = 0;
+                const minLeft = 0;
+                const maxTop = window.innerHeight - elmnt.offsetHeight;
+                const maxLeft = window.innerWidth - elmnt.offsetWidth;
+
+                newTop = Math.max(minTop, Math.min(newTop, maxTop));
+                newLeft = Math.max(minLeft, Math.min(newLeft, maxLeft));
+
+                elmnt.style.top = newTop + "px";
+                elmnt.style.left = newLeft + "px";
               }
-  
+
               function closeDragElement() {
                 document.onmouseup = null;
                 document.onmousemove = null;
