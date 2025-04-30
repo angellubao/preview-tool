@@ -99,9 +99,9 @@ function App() {
         <div style="margin: 0 20px; ${width >= 728 ? 'width: 100%;' : ''}">
           <h3 style="margin: 0 0 5px 0; font-size: 16px;">${banner.title}</h3>
           <p style="text-align: left; color: #555; font-size: 12px; margin: 0 0 5px 0;">
-            Size: ${width === 340 && height === 677 ? 'Responsive' : `${width}x${height}`}
+            Size: ${width === 340 && height === 677 ? '320x480 Responsive' : `${width}x${height}`}
           </p>
-          <div style="width: ${width}px; height: ${height}px; ${width >= 728 ? 'margin: 0;' : 'margin: 0 auto;'} overflow: hidden;">
+          <div style="width: ${width}px; height: ${height}px; ${width >= 728 ? 'margin: 0;' : 'margin: 0;'} overflow: hidden;">
             <iframe 
               src="${banner.url}" 
               style="width: 100%; height: 100%; border: none;"
@@ -123,7 +123,7 @@ function App() {
             body {
               font-family: Arial, sans-serif;
               max-width: 1200px;
-              margin: 0 auto;
+              margin: 0;
               padding: 20px;
               transition: background-color 0.3s, color 0.3s;
               background-color: #ffffff;
@@ -144,7 +144,7 @@ function App() {
               display: flex;
               flex-wrap: wrap;
               justify-content: flex-start;
-              gap: 30px 0;
+              gap: 50px 0;
               padding: 0 20px;
             }
             .banners-container > div {
@@ -658,15 +658,22 @@ function App() {
               />
             </Box>
             <Stack direction="row" spacing={2}>
-              <Box sx={{ width: '500px' }}>
+              <Box sx={{ width: '750px' }}>
                 <TextField
                   fullWidth
-                  label="Enter Banner URL"
+                  label="Enter the creative index url from S3"
                   variant="outlined"
                   value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="https://example.com/banner_300x600.html"
+                  onChange={(e) => {
+                    let newUrl = e.target.value;
+                    newUrl = newUrl.replace(
+                      'https://nativetouch-public.s3.amazonaws.com/',
+                      'https://assets.nativetouch.io/'
+                    );
+                    setUrl(newUrl);
+                  }}
+                  onKeyDown={handleKeyPress}
+                  placeholder="https://assets.nativetouch.io/2025/folder/folder/index.html"
                 />
               </Box>
               <Box>
@@ -697,7 +704,7 @@ function App() {
           </Alert>
         </Snackbar>
 
-        <Grid container spacing={3}>
+        <Grid container spacing={4} sx={{ paddingTop: 5 }}>
           {banners.map((banner, index) => (
             <Grid item xs={12} sm={6} md={4} key={index}>
               <Paper elevation={3} sx={{ p: 2, height: '100%', position: 'relative' }}>
@@ -734,7 +741,7 @@ function App() {
                 />
                 {(banner.width > 0 || getDimensionsFromFilename(banner.url)) && (
                   <Typography variant="caption" display="block" color="text.secondary">
-                    Size: {banner.width === 340 && banner.height === 677 ? 'Responsive' : `${banner.width} × ${banner.height}px`}
+                    Size: {banner.width === 340 && banner.height === 677 ? '320x480 Responsive' : `${banner.width}x${banner.height}`}
                   </Typography>
                 )}
                 <Box
@@ -744,7 +751,7 @@ function App() {
                     position: 'relative',
                     overflow: 'visible',
                     borderRadius: 1,
-                    margin: '0 auto',
+                    margin: '0',
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
