@@ -98,7 +98,7 @@ function App() {
       return `
         <div style="margin: 0 20px; ${width >= 728 ? 'width: 100%;' : ''}">
           <h3 style="margin: 0 0 5px 0; font-size: 16px;">${banner.title}</h3>
-          <p style="text-align: left; color: #666666; font-size: 12px; margin: 0 0 5px 0;">
+          <p style="text-align: left; color: #555; font-size: 12px; margin: 0 0 5px 0;">
             Size: ${width === 340 && height === 677 ? 'Responsive' : `${width}x${height}`}
           </p>
           <div style="width: ${width}px; height: ${height}px; ${width >= 728 ? 'margin: 0;' : 'margin: 0 auto;'} overflow: hidden;">
@@ -300,7 +300,11 @@ function App() {
               display: flex;
               justify-content: space-between; /* Large space between spans */
               padding: 5px 12px;
-              border-bottom: 1px solid #ddd;
+              border-bottom: 1px solid #e4e4e4;
+            }
+
+            .dark-mode .tracking-item{
+              border-bottom: 1px solid #555555;
             }
 
             .tracking-item .label {
@@ -308,7 +312,7 @@ function App() {
             }
 
             .tracking-item .banner-name {
-              color: #666;
+              color: #9e9e9e;
               margin-left: 40px; /* optional if you want extra manual space too */
             }
 
@@ -607,7 +611,7 @@ function App() {
       },
       text: {
         primary: darkMode ? '#e0e0e0' : '#000000',
-        secondary: darkMode ? '#b0b0b0' : '#666666',
+        secondary: darkMode ? '#b0b0b0' : '#555',
       },
     },
   });
@@ -617,7 +621,7 @@ function App() {
       <CssBaseline />
       <Container maxWidth="xl" sx={{ py: 4 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-          <Typography variant="h4" component="h1" color=" #00C784">
+          <Typography variant="h4" component="h1" color=" #00C784" fontWeight="bold">
             Banner Preview Tool
           </Typography>
           <Box>
