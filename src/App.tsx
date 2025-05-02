@@ -19,7 +19,6 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import SaveIcon from '@mui/icons-material/Save';
 import CloseIcon from '@mui/icons-material/Close';
-import RefreshIcon from '@mui/icons-material/Refresh';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 
@@ -140,7 +139,7 @@ function App() {
               position: relative;
             }
             body.dark-mode {
-              background-color: #2d2d2d;
+              background-color: #3d4047;
               color: #e0e0e0;
             }
             .banners-container {
@@ -180,7 +179,6 @@ function App() {
               // background: #ff5c00;
             }
             .dark-mode .theme-toggle, .dark-mode .trackings-button {
-              // background: #ff5c00;
               border-color: #06d6a0;
               color: #e0e0e0;
             }
@@ -626,8 +624,8 @@ function App() {
     palette: {
       mode: darkMode ? 'dark' : 'light',
       background: {
-        default: darkMode ? '#2d2d2d' : '#ffffff',
-        paper: darkMode ? '#2d2d2d' : '#ffffff',
+        default: darkMode ? '#3d4047' : '#ffffff',
+        paper: darkMode ? '#3d4047' : '#ffffff',
       },
       text: {
         primary: darkMode ? '#e0e0e0' : '#000000',
