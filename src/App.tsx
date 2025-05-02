@@ -101,7 +101,7 @@ function App() {
           <p style="text-align: left; color: #555; font-size: 12px; margin: 0 0 5px 0;">
             Size: ${width === 340 && height === 677 ? '320x480 Responsive' : `${width}x${height}`}
           </p>
-          <div style="width: ${width}px; height: ${height}px; ${width >= 728 ? 'margin: 0;' : 'margin: 0;'} overflow: hidden;">
+          <div style="width: ${width}px; height: ${height}px; ${width >= 728 ? 'margin: 0;' : 'margin: 0;'} ">
             <iframe 
               src="${banner.url}" 
               style="width: 100%; height: 100%; border: none;"
@@ -122,9 +122,9 @@ function App() {
           <style>
             body {
               font-family: Arial, sans-serif;
-              max-width: 1200px;
+              // max-width: 1200px;
               margin: 0;
-              padding: 20px;
+              padding: 0;
               transition: background-color 0.3s, color 0.3s;
               background-color: #ffffff;
               color: #000000;
@@ -134,18 +134,12 @@ function App() {
               background-color: #2d2d2d;
               color: #e0e0e0;
             }
-            h1 {
-              text-align: center;
-              margin-bottom: 50px;
-              font-size: 24px;
-              color: #00C784;
-            }
             .banners-container {
               display: flex;
               flex-wrap: wrap;
               justify-content: flex-start;
               gap: 50px 0;
-              padding: 0 20px;
+              padding: 100px 40px 70px;
             }
             .banners-container > div {
               flex: 0 0 auto;
@@ -155,29 +149,30 @@ function App() {
             }
             .theme-toggle, .trackings-button {
               position: fixed;
-              top: 20px;
+              top: 6px;
               width: 40px;
               height: 40px;
               border-radius: 50%;
-              border: 1px solid #ddd;
+              border: 2px solid #06d6a0;
               display: flex;
               align-items: center;
               justify-content: center;
               cursor: pointer;
               transition: background-color 0.3s;
-              z-index: 999;
+              z-index: 1000;
+              background: #3b4049
             }
             .theme-toggle {
               right: 20px;
-              background: #fff;
+              // background: #ff5c00;
             }
             .trackings-button {
               right: 70px;
-              background: #fff;
+              // background: #ff5c00;
             }
             .dark-mode .theme-toggle, .dark-mode .trackings-button {
-              background: #2d2d2d;
-              border-color: #404040;
+              // background: #ff5c00;
+              border-color: #06d6a0;
               color: #e0e0e0;
             }
             .popup-content {
@@ -259,7 +254,7 @@ function App() {
 
             .copy-btn {
               padding: 8px 16px;
-              background: #00C784;
+              background: #06d6a0;
               color: #fff;
               border: none;
               border-radius: 5px;
@@ -267,23 +262,23 @@ function App() {
               transition: background 0.3s;
             }
             .copy-btn:active {
-              background: #009e6b;
+              background: #048a81;
             }
             .dark-mode .popup-content {
-              background: #333;
+              background: #3b4049;
               color: #eee;
             }
             .dark-mode .popup-header {
-              background: #444;
+              background: #878787;
             }
             .dark-mode .popup-content ul li {
               color: #ccc;
             }
             .dark-mode .popup-content button.copy-btn {
-              background: #00C784;
+              background: #06d6a0;
             }
             .dark-mode .popup-content button.copy-btn:active {
-              background: #009e6b;
+              background: #048a81;
             }
             .clear-btn {
               padding: 8px 16px;
@@ -300,7 +295,7 @@ function App() {
               display: flex;
               justify-content: space-between; /* Large space between spans */
               padding: 5px 12px;
-              border-bottom: 1px solid #e4e4e4;
+              border-bottom: 1px solid #cdcdcd;
             }
 
             .dark-mode .tracking-item{
@@ -314,6 +309,22 @@ function App() {
             .tracking-item .banner-name {
               color: #9e9e9e;
               margin-left: 40px; /* optional if you want extra manual space too */
+            }
+            h1 {
+              position: fixed;
+              top: 0;
+              width: 100%;
+              background-color: #048a81;
+              text-align: center;
+              color: white;
+              padding: 12px 20px;
+              margin: 0;
+              margin-bottom: 40px;
+              font-size: 24px;
+              font-weight: bold;
+              border-bottom: 2px solid #06d6a0; /* subtle border line */
+              box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+              z-index: 999;
             }
 
           </style>
@@ -621,7 +632,7 @@ function App() {
       <CssBaseline />
       <Container maxWidth="xl" sx={{ py: 4 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-          <Typography variant="h4" component="h1" color=" #00C784" fontWeight="bold">
+          <Typography variant="h4" component="h1" color=" #06d6a0" fontWeight="bold">
             Banner Preview Tool
           </Typography>
           <Box>
@@ -631,9 +642,9 @@ function App() {
               onClick={handleSave}
               disabled={banners.length === 0}
               sx={{ ml: 2,
-                backgroundColor: '#00C784',
+                backgroundColor: '#06d6a0',
                 '&:hover': {
-                  backgroundColor: '#00b374',
+                  backgroundColor: '#048a81',
                 },}}
             >
               Save
@@ -681,9 +692,9 @@ function App() {
                   variant="contained"
                   onClick={handleAddBanner}
                   sx={{ height: '56px', minWidth: '56px', 
-                    backgroundColor: '#00C784',
+                    backgroundColor: '#06d6a0',
                     '&:hover': {
-                      backgroundColor: '#00b374',
+                      backgroundColor: '#048a81',
                     },}}
                 >
                   <AddIcon />
@@ -718,7 +729,7 @@ function App() {
                     bgcolor: '#aaa',
                     boxShadow: 1,
                     '&:hover': {
-                      bgcolor: '#00C784',
+                      bgcolor: '#06d6a0',
                       color: 'white'
                     }
                   }}
