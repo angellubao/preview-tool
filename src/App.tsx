@@ -19,6 +19,7 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import SaveIcon from '@mui/icons-material/Save';
 import CloseIcon from '@mui/icons-material/Close';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 
@@ -90,19 +91,27 @@ function App() {
       }
     });
 
-    const bannerHTML = banners.map((banner) => {
+    const bannerHTML = banners.map((banner, index) => {
       const filenameDimensions = getDimensionsFromFilename(banner.url);
       const width = banner.width > 0 ? banner.width : (filenameDimensions?.width || 340);
       const height = banner.height > 0 ? banner.height : (filenameDimensions?.height || 677);
-
+      const iframeId = `banner-iframe-${index}`;
+    
       return `
         <div style="margin: 0 20px; ${width >= 728 ? 'width: 100%;' : ''}">
           <h3 style="margin: 0 0 5px 0; font-size: 16px;">${banner.title}</h3>
-          <p style="text-align: left; color: #555; font-size: 12px; margin: 0 0 5px 0;">
-            Size: ${width === 340 && height === 677 ? '320x480 Responsive' : `${width}x${height}`}
-          </p>
-          <div style="width: ${width}px; height: ${height}px; ${width >= 728 ? 'margin: 0;' : 'margin: 0;'} ">
+          <p style="text-align: left; color: #878787; font-size: 12px; margin: 0 0 5px 0;">
+          Size: ${width === 340 && height === 677 ? '320x480 Responsive' : `${width}x${height}`}
+          <img class='btnrefresh'
+            src="https://assets.nativetouch.io/test/preview-tool/refresh.svg" 
+            alt="Refresh" 
+            title="Refresh"
+            style="cursor: pointer; margin-top: -4px; display: inline-block; vertical-align: middle;" 
+            onclick="document.getElementById('${iframeId}').src = document.getElementById('${iframeId}').src"
+          />
+          <div style="width: ${width}px; height: ${height}px;">
             <iframe 
+              id="${iframeId}"
               src="${banner.url}" 
               style="width: 100%; height: 100%; border: none;"
               title="${banner.title}"
@@ -110,7 +119,7 @@ function App() {
           </div>
         </div>
       `;
-    }).join('');
+    }).join('');    
   
     return `
       <!DOCTYPE html>
