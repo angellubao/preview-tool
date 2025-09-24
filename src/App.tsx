@@ -91,34 +91,54 @@ function App() {
     });
 
     const bannerHTML = banners.map((banner, index) => {
-      const filenameDimensions = getDimensionsFromFilename(banner.url);
-      const width = banner.width > 0 ? banner.width : (filenameDimensions?.width || 340);
-      const height = banner.height > 0 ? banner.height : (filenameDimensions?.height || 677);
-      const iframeId = `banner-iframe-${index}`;
-    
-      return `
-        <div style="margin: 0 20px; ${width >= 728 ? 'width: 100%;' : ''}">
-          <h3 style="margin: 0 0 5px 0; font-size: 16px;">${banner.title}</h3>
-          <p style="text-align: left; color: #878787; font-size: 12px; margin: 0 0 5px 0;">
-          Size: ${width === 340 && height === 677 ? '320x480 Responsive' : `${width}x${height}`}
-          <img class='btnrefresh'
-            src="https://assets.nativetouch.io/test/preview-tool/refresh.svg" 
-            alt="Refresh" 
-            title="Refresh"
-            style="cursor: pointer; margin-top: -4px; display: inline-block; vertical-align: middle;" 
-            onclick="document.getElementById('${iframeId}').src = document.getElementById('${iframeId}').src"
-          />
-          <div style="width: ${width}px; height: ${height}px;">
-            <iframe 
-              id="${iframeId}"
-              src="${banner.url}" 
-              style="width: 100%; height: 100%; border: none;"
-              title="${banner.title}"
-            ></iframe>
-          </div>
+  const filenameDimensions = getDimensionsFromFilename(banner.url);
+  const width = banner.width > 0 ? banner.width : (filenameDimensions?.width || 340);
+  const height = banner.height > 0 ? banner.height : (filenameDimensions?.height || 677);
+  const iframeId = `banner-iframe-${index}`;
+  const isOnlyBanner = banners.length === 1 && width === 340 && height === 677;
+
+  if (isOnlyBanner) {
+    return `
+      <div style="display: flex; justify-content: center; align-items: center; width: 100%;">
+        <div style="position: relative; width: 390px; height: 780px;">
+          <img src="https://assets.nativetouch.io/test/preview-tool/_dontdelete/phone.png" 
+               alt="Phone Frame" 
+               style="position: absolute; top: -70px; left: -40px; width: 466px; height: 809px; pointer-events: none; z-index: 2;">
+          <iframe 
+            id="${iframeId}"
+            src="${banner.url}" 
+            style="position: absolute; top: 53px; left: 40px; width: 306px; height: 610px; border: none; z-index: 1;"
+            title="${banner.title}"
+          ></iframe>
         </div>
-      `;
-    }).join('');    
+      </div>
+    `;
+  }
+
+  return `
+    <div style="margin: 0 20px; ${width >= 728 ? 'width: 100%;' : ''}">
+      <h3 style="margin: 0 0 5px 0; font-size: 16px;">${banner.title}</h3>
+      <p style="text-align: left; color: #878787; font-size: 12px; margin: 0 0 5px 0;">
+      Size: ${width === 340 && height === 677 ? '320x480 Responsive' : `${width}x${height}`}
+      <img class='btnrefresh'
+        src="https://assets.nativetouch.io/test/preview-tool/_dontdelete/refresh.svg" 
+        alt="Refresh" 
+        title="Refresh"
+        style="cursor: pointer; margin-top: -4px; display: inline-block; vertical-align: middle;" 
+        onclick="document.getElementById('${iframeId}').src = document.getElementById('${iframeId}').src"
+      />
+      <div style="width: ${width}px; height: ${height}px;">
+        <iframe 
+          id="${iframeId}"
+          src="${banner.url}" 
+          style="width: 100%; height: 100%; border: none;"
+          title="${banner.title}"
+        ></iframe>
+      </div>
+    </div>
+  `;
+}).join('');
+
   
     return `
       <!DOCTYPE html>
@@ -128,9 +148,14 @@ function App() {
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <title>${previewTitle}</title>
           <style>
+            @font-face {
+                font-family: "Nave";
+                src: url("https://assets.nativetouch.io/test/preview-tool/_dontdelete/NaveBlack.ttf") format("truetype");
+                font-weight: normal;
+                font-style: normal;
+            }
             body {
               font-family: Arial, sans-serif;
-              // max-width: 1200px;
               margin: 0;
               padding: 0;
               transition: background-color 0.3s, color 0.3s;
@@ -147,7 +172,7 @@ function App() {
               flex-wrap: wrap;
               justify-content: flex-start;
               gap: 50px 0;
-              padding: 100px 40px 70px;
+              padding: 100px 40px 150px;
             }
             .banners-container > div {
               flex: 0 0 auto;
@@ -155,9 +180,30 @@ function App() {
             .banners-container > div[style*="width: 100%"] {
               flex: 0 0 100%;
             }
+
+            /* footer bar */
+            footer.footer-bar {
+              position: fixed;
+              bottom: 0;
+              left: 0;
+              right: 0;
+              height: 60px;
+              background: #2e2f34;
+              border-top: 2px solid #06d6a0;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+              z-index: 999;
+            }
+            footer.footer-bar img {
+              height: 65px;
+              object-fit: contain;
+            }
+           
             .theme-toggle, .trackings-button {
               position: fixed;
-              top: 6px;
+              top: 10px;
               width: 40px;
               height: 40px;
               border-radius: 50%;
@@ -170,6 +216,7 @@ function App() {
               z-index: 1000;
               background: #3b4049
             }
+              
             .theme-toggle {
               right: 20px;
               // background: #ff5c00;
@@ -185,8 +232,8 @@ function App() {
             .popup-content {
               display: none;
               position: fixed;
-              top: 100px;
-              left: 50%;
+              top: 10%;
+              right: 5%;
               background: white;
               // padding: 40px 20px 20px 20px;
               width: 400px;
@@ -323,23 +370,23 @@ function App() {
               width: 100%;
               background-color: #048a81;
               text-align: center;
-              color: white;
-              padding: 12px 20px;
+              color: #f5ffde;
+              padding: 12px 0px;
               margin: 0;
               margin-bottom: 40px;
-              font-size: 24px;
+              font-size: 30px;
               font-weight: bold;
               border-bottom: 2px solid #06d6a0; /* subtle border line */
               box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
               z-index: 999;
+              font-family: "Nave", serif;
             }
-
+          
           </style>
         </head>
         <body>
           <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
           <button class="trackings-button" onclick="togglePopup()">📋</button>
-          
           <h1>${previewTitle}</h1>
           <div class="banners-container">
             ${bannerHTML}
@@ -360,7 +407,11 @@ function App() {
             </footer>
           </div>
 
-  
+          <!-- Footer Bar -->
+          <footer class="footer-bar">
+            <img src="https://assets.nativetouch.io/test/preview-tool/_dontdelete/ntlogo-dark.png" alt="Logo">
+          </footer>
+
           <script>
             function toggleTheme() {
               document.body.classList.toggle('dark-mode');
@@ -373,8 +424,6 @@ function App() {
             } else {
               document.body.classList.remove('dark-mode');
             }
-  
-            // const banners = ${JSON.stringify(banners)};
   
             function togglePopup() {
               const popup = document.getElementById('popup');
