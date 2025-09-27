@@ -203,7 +203,7 @@ function App() {
            
             .theme-toggle, .trackings-button {
               position: fixed;
-              top: 10px;
+              margin: 10px;
               width: 40px;
               height: 40px;
               border-radius: 50%;
@@ -218,12 +218,10 @@ function App() {
             }
               
             .theme-toggle {
-              right: 20px;
-              // background: #ff5c00;
+              right: 10px;
             }
             .trackings-button {
-              right: 70px;
-              // background: #ff5c00;
+              right: 60px;
             }
             .dark-mode .theme-toggle, .dark-mode .trackings-button {
               border-color: #06d6a0;
@@ -235,7 +233,6 @@ function App() {
               top: 10%;
               right: 5%;
               background: white;
-              // padding: 40px 20px 20px 20px;
               width: 400px;
               height: 300px;
               border-radius: 10px;
@@ -301,8 +298,6 @@ function App() {
 
             .popup-footer {
               padding: 10px;
-              // background: #f9f9f9;
-              // border-top: 1px solid #ccc;
               text-align: center;
             }
 
